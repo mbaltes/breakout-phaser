@@ -38,33 +38,24 @@ let config = {
     }
 };
 
-const AIDIFFICULTY = 250;
 const DELAY = 2000;
-const MAX_ALLOWED_SPEED = 900;
-const PADDLEHEIGHT = 50;
 const PADDLEWIDTH = 60;
-//const MAXBOUNCEANGLE = 2 * Math.PI/12;
-const MAXBOUNCEANGLE = Math.PI/9;
-const eightMoveSpeedX = 300;
-const twelveMoveSpeedX = 400;
-const orangeHitSpeedY = 400;
-const redHitSpeedY = 500;
 
 let ballSpeedY = 300;
 let ballSpeedX = 200;
 let p1Score = 0;
-let p2Score = 0;
+let playerLives = 5;
+let hitCounter = 0;
+let orangeHitToggle = false;
+let redHitToggle = false;
 let balls;
 let cursors;
 let playerOne;
-let playerTwo;
 let ball;
 let playerOneScore;
-let playerTwoScore;
 let winningText;
 let walls;
 let playerLivesText;
-let playerLives = 5;
 let blueBar;
 let bars;
 let greenBar;
@@ -72,9 +63,6 @@ let yellowBar;
 let orangeBar;
 let brownBar;
 let redBar;
-let hitCounter = 0;
-let orangeHitToggle = false;
-let redHitToggle = false;
 
 let game = new Phaser.Game(config);
 
@@ -104,115 +92,20 @@ function create()
 
     // Create vertical walls
     walls = this.physics.add.staticGroup();
-    walls.create(25, 400, 'vertical-wall');
+    walls.create(25,  400, 'vertical-wall');
     walls.create(775, 400, 'vertical-wall');
     walls.create(400, 100, 'horizontal-wall');
 
-    // Create blue line
-    blueBar = this.physics.add.staticGroup();
-    blueBar.create(75,  300, 'blue-bar');
-    blueBar.create(125, 300, 'blue-bar');
-    blueBar.create(175, 300, 'blue-bar');
-    blueBar.create(225, 300, 'blue-bar');
-    blueBar.create(275, 300, 'blue-bar');
-    blueBar.create(325, 300, 'blue-bar');
-    blueBar.create(375, 300, 'blue-bar');
-    blueBar.create(425, 300, 'blue-bar');
-    blueBar.create(475, 300, 'blue-bar');
-    blueBar.create(525, 300, 'blue-bar');
-    blueBar.create(575, 300, 'blue-bar');
-    blueBar.create(625, 300, 'blue-bar');
-    blueBar.create(675, 300, 'blue-bar');
-    blueBar.create(725, 300, 'blue-bar');
-
-    // Create green line
-    greenBar = this.physics.add.staticGroup();
-    greenBar.create(75,  280, 'green-bar');
-    greenBar.create(125, 280, 'green-bar');
-    greenBar.create(175, 280, 'green-bar');
-    greenBar.create(225, 280, 'green-bar');
-    greenBar.create(275, 280, 'green-bar');
-    greenBar.create(325, 280, 'green-bar');
-    greenBar.create(375, 280, 'green-bar');
-    greenBar.create(425, 280, 'green-bar');
-    greenBar.create(475, 280, 'green-bar');
-    greenBar.create(525, 280, 'green-bar');
-    greenBar.create(575, 280, 'green-bar');
-    greenBar.create(625, 280, 'green-bar');
-    greenBar.create(675, 280, 'green-bar');
-    greenBar.create(725, 280, 'green-bar');
-
-    // Create yellow line
+    // Create bars
+    blueBar   = this.physics.add.staticGroup();
+    greenBar  = this.physics.add.staticGroup();
     yellowBar = this.physics.add.staticGroup();
-    yellowBar.create(75,  260, 'yellow-bar');
-    yellowBar.create(125, 260, 'yellow-bar');
-    yellowBar.create(175, 260, 'yellow-bar');
-    yellowBar.create(225, 260, 'yellow-bar');
-    yellowBar.create(275, 260, 'yellow-bar');
-    yellowBar.create(325, 260, 'yellow-bar');
-    yellowBar.create(375, 260, 'yellow-bar');
-    yellowBar.create(425, 260, 'yellow-bar');
-    yellowBar.create(475, 260, 'yellow-bar');
-    yellowBar.create(525, 260, 'yellow-bar');
-    yellowBar.create(575, 260, 'yellow-bar');
-    yellowBar.create(625, 260, 'yellow-bar');
-    yellowBar.create(675, 260, 'yellow-bar');
-    yellowBar.create(725, 260, 'yellow-bar');
-
-    // Create orange line
     orangeBar = this.physics.add.staticGroup();
-    orangeBar.create(75,  240, 'orange-bar');
-    orangeBar.create(125, 240, 'orange-bar');
-    orangeBar.create(175, 240, 'orange-bar');
-    orangeBar.create(225, 240, 'orange-bar');
-    orangeBar.create(275, 240, 'orange-bar');
-    orangeBar.create(325, 240, 'orange-bar');
-    orangeBar.create(375, 240, 'orange-bar');
-    orangeBar.create(425, 240, 'orange-bar');
-    orangeBar.create(475, 240, 'orange-bar');
-    orangeBar.create(525, 240, 'orange-bar');
-    orangeBar.create(575, 240, 'orange-bar');
-    orangeBar.create(625, 240, 'orange-bar');
-    orangeBar.create(675, 240, 'orange-bar');
-    orangeBar.create(725, 240, 'orange-bar');
+    brownBar  = this.physics.add.staticGroup();
+    redBar    = this.physics.add.staticGroup();
+    createBars();
 
-    // Create brown line
-    brownBar = this.physics.add.staticGroup();
-    brownBar.create(75,  220, 'brown-bar');
-    brownBar.create(125, 220, 'brown-bar');
-    brownBar.create(175, 220, 'brown-bar');
-    brownBar.create(225, 220, 'brown-bar');
-    brownBar.create(275, 220, 'brown-bar');
-    brownBar.create(325, 220, 'brown-bar');
-    brownBar.create(375, 220, 'brown-bar');
-    brownBar.create(425, 220, 'brown-bar');
-    brownBar.create(475, 220, 'brown-bar');
-    brownBar.create(525, 220, 'brown-bar');
-    brownBar.create(575, 220, 'brown-bar');
-    brownBar.create(625, 220, 'brown-bar');
-    brownBar.create(675, 220, 'brown-bar');
-    brownBar.create(725, 220, 'brown-bar');
-
-    // Create red line
-    redBar = this.physics.add.staticGroup();
-    redBar.create(75,  200, 'red-bar');
-    redBar.create(125, 200, 'red-bar');
-    redBar.create(175, 200, 'red-bar');
-    redBar.create(225, 200, 'red-bar');
-    redBar.create(275, 200, 'red-bar');
-    redBar.create(325, 200, 'red-bar');
-    redBar.create(375, 200, 'red-bar');
-    redBar.create(425, 200, 'red-bar');
-    redBar.create(475, 200, 'red-bar');
-    redBar.create(525, 200, 'red-bar');
-    redBar.create(575, 200, 'red-bar');
-    redBar.create(625, 200, 'red-bar');
-    redBar.create(675, 200, 'red-bar');
-    redBar.create(725, 200, 'red-bar');
-
-
-
-    // Create paddles
+    // Create paddle
     playerOne = this.physics.add.image(400, 575, 'paddle');
     playerOne.setCollideWorldBounds(true);
     playerOne.setImmovable(true);
@@ -247,11 +140,6 @@ function create()
         fontFamily: 'Electrolize'
     });
 
-    // winningText    = this.add.text(200, 400, '', { 
-    //     fontSize: '64px', 
-    //     fill: '#f9f9fa' 
-    // });
-
     // Create collision detection
     this.physics.add.collider(playerOne, walls);
     this.physics.add.collider(balls, walls);
@@ -267,15 +155,6 @@ function create()
 
 function update()
 {
-    // Code for AI to play itself
-    // if (ball.body.position.x < playerOne.body.position.x) {
-    //     playerOne.setVelocityX(-400);
-    // } else if (ball.body.position.x > playerOne.body.position.x) {
-    //     playerOne.setVelocityX(400);
-    // } else {
-    //     playerOne.setVelocity(0);
-    // }
-
     // Conditions to lose life
     if (ball.body.position.y === 590) {
         this.sound.play('blip-score');
@@ -312,22 +191,19 @@ function update()
 
 function barCollideBlueOrGreen(ball, bar) {
     this.sound.play('blip-wall');
-    //bar.disableBody(true, true);
     bar.destroy();
     playerOneScore.setText(('000' + (++p1Score)).substr(-3));
 }
 
 function barCollideYellow(ball, bar) {
     this.sound.play('blip-wall');
-    bar.disableBody(true, true);
+    bar.destroy();
     p1Score += 4
     playerOneScore.setText(('000' + (p1Score)).substr(-3));
 }
 
 function barCollideOrange(ball, bar) {
-    console.log(ball.body.velocity);
     this.sound.play('blip-wall');
-    //bar.disableBody(true, true);
     p1Score += 4
     playerOneScore.setText(('000' + (p1Score)).substr(-3));
     if (!orangeHitToggle && ball.body.velocity.y > 0) {
@@ -344,20 +220,17 @@ function barCollideOrange(ball, bar) {
         ball.body.setVelocityY(-ballSpeedY);
     }
     bar.destroy();
-
 }
 
 function barCollideBrown(ball, bar) {
     this.sound.play('blip-wall');
-    bar.disableBody(true, true);
+    bar.destroy();
     p1Score += 7
     playerOneScore.setText(('000' + (p1Score)).substr(-3));
 }
 
 function barCollideRed(ball, bar) {
-    console.log(ball.body.velocity);
     this.sound.play('blip-wall');
-    //bar.disableBody(true, true);
     p1Score += 7
     playerOneScore.setText(('000' + (p1Score)).substr(-3));
     if (!redHitToggle && ball.body.velocity.y > 0) {
@@ -374,7 +247,6 @@ function barCollideRed(ball, bar) {
         ball.body.setVelocityY(-ballSpeedY);
     }
     bar.destroy();
-
 }
 
 function wallOverlap(playerOne, walls) {
@@ -412,6 +284,26 @@ function hitplayerOne(ball, playerOne) {
         ball.setVelocity(-ball.body.velocity.x, -ballSpeedY);
     } else if (normalizedRelativeIntersectionX < 0 && ball.body.velocity.x > 0) {
         ball.setVelocityY(-ballSpeedY);
+    }
+}
+
+function createBars() {
+    for (let j = 300; j >= 200; j -= 20) {
+        for (let i = 75; i <= 725; i += 50) {
+            if (j == 300) {
+                blueBar.create(i, j, 'blue-bar');
+            } else if (j == 280) {
+                greenBar.create(i, j, 'green-bar');
+            } else if (j == 260) {
+                yellowBar.create(i, j, 'yellow-bar');
+            } else if (j == 240) {
+                orangeBar.create(i, j, 'orange-bar');
+            } else if (j == 220) {
+                brownBar.create(i, j, 'brown-bar');
+            } else if (j == 200) {
+                redBar.create(i, j, 'red-bar');
+            }
+        }
     }
 }
 
