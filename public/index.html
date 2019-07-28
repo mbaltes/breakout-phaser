@@ -1,9 +1,7 @@
 <!doctype html> 
 <html lang="en"> 
 <head>
-    
     <link href="https://fonts.googleapis.com/css?family=Electrolize&display=swap" rel="stylesheet">
- 
     <meta charset="UTF-8" />
     <title>Breakout</title>
     <script src="//cdn.jsdelivr.net/npm/phaser@3.11.0/dist/phaser.js"></script>
@@ -47,6 +45,10 @@ const PADDLEHEIGHT = 50;
 const PADDLEWIDTH = 60;
 //const MAXBOUNCEANGLE = 2 * Math.PI/12;
 const MAXBOUNCEANGLE = Math.PI/9;
+const eightMoveSpeedX = 300;
+const twelveMoveSpeedX = 400;
+const orangeHitSpeedY = 400;
+const redHitSpeedY = 500;
 
 let ballSpeedY = 300;
 let ballSpeedX = 200;
@@ -71,6 +73,8 @@ let orangeBar;
 let brownBar;
 let redBar;
 let hitCounter = 0;
+let orangeHitToggle = false;
+let redHitToggle = false;
 
 let game = new Phaser.Game(config);
 
@@ -237,7 +241,7 @@ function create()
         fontFamily: 'Electrolize'
     });
 
-    playerLivesText = this.add.text(550, 17, '3', {
+    playerLivesText = this.add.text(550, 17, '5', {
         fontSize: '64px',
         fill: '#8e8e8e',
         fontFamily: 'Electrolize'
@@ -251,12 +255,12 @@ function create()
     // Create collision detection
     this.physics.add.collider(playerOne, walls);
     this.physics.add.collider(balls, walls);
-    this.physics.add.collider(ball, blueBar, barCollide, null, this);
-    this.physics.add.collider(ball, greenBar, barCollide, null, this);
-    this.physics.add.collider(ball, yellowBar, barCollide, null, this);
+    this.physics.add.collider(ball, blueBar, barCollideBlueOrGreen, null, this);
+    this.physics.add.collider(ball, greenBar, barCollideBlueOrGreen, null, this);
+    this.physics.add.collider(ball, yellowBar, barCollideYellow, null, this);
     this.physics.add.collider(ball, orangeBar, barCollideOrange, null, this);
-    this.physics.add.collider(ball, brownBar, barCollide, null, this);
-    this.physics.add.collider(ball, redBar, barCollide, null, this);
+    this.physics.add.collider(ball, brownBar, barCollideBrown, null, this);
+    this.physics.add.collider(ball, redBar, barCollideRed, null, this);
     this.physics.add.collider(ball, playerOne, hitplayerOne, null, this);
     this.physics.add.overlap(playerOne, walls, wallOverlap, null, this);
 }
@@ -276,6 +280,8 @@ function update()
     if (ball.body.position.y === 590) {
         this.sound.play('blip-score');
         hitCounter = 0;
+        orangeHitToggle = false;
+        redHitToggle = false;
         ball.x = 700;
         ball.y = 330;
         ball.setTint(0x000000);
@@ -304,16 +310,70 @@ function update()
     }
 }
 
-function barCollide(ball, bar) {
-    bar.disableBody(true, true);
+function barCollideBlueOrGreen(ball, bar) {
+    this.sound.play('blip-wall');
+    //bar.disableBody(true, true);
+    bar.destroy();
     playerOneScore.setText(('000' + (++p1Score)).substr(-3));
 }
 
-function barCollideOrange(ball, bar) {
+function barCollideYellow(ball, bar) {
+    this.sound.play('blip-wall');
     bar.disableBody(true, true);
-    playerOneScore.setText(('000' + (++p1Score)).substr(-3));
-    // ball.body.setVelocityX(ball.body.velocity.x * 2);
-    // ball.body.setVelocityY(ball.body.velocity.y * 2);
+    p1Score += 4
+    playerOneScore.setText(('000' + (p1Score)).substr(-3));
+}
+
+function barCollideOrange(ball, bar) {
+    console.log(ball.body.velocity);
+    this.sound.play('blip-wall');
+    //bar.disableBody(true, true);
+    p1Score += 4
+    playerOneScore.setText(('000' + (p1Score)).substr(-3));
+    if (!orangeHitToggle && ball.body.velocity.y > 0) {
+        orangeHitToggle = true;
+        ballSpeedX *= 1.2;
+        ballSpeedY *= 1.2;
+        ball.body.setVelocityX(-ballSpeedX);
+        ball.body.setVelocityY(ballSpeedY);
+    } else if (!orangeHitToggle && ball.body.velocity.y < 0) {
+        orangeHitToggle = true;
+        ballSpeedX *= 1.2;
+        ballSpeedY *= 1.2;
+        ball.body.setVelocityX(-ballSpeedX);
+        ball.body.setVelocityY(-ballSpeedY);
+    }
+    bar.destroy();
+
+}
+
+function barCollideBrown(ball, bar) {
+    this.sound.play('blip-wall');
+    bar.disableBody(true, true);
+    p1Score += 7
+    playerOneScore.setText(('000' + (p1Score)).substr(-3));
+}
+
+function barCollideRed(ball, bar) {
+    console.log(ball.body.velocity);
+    this.sound.play('blip-wall');
+    //bar.disableBody(true, true);
+    p1Score += 7
+    playerOneScore.setText(('000' + (p1Score)).substr(-3));
+    if (!redHitToggle && ball.body.velocity.y > 0) {
+        redHitToggle = true;
+        ballSpeedX *= 1.2;
+        ballSpeedY *= 1.2;
+        ball.body.setVelocityX(-ballSpeedX);
+        ball.body.setVelocityY(ballSpeedY);
+    } else if (!redHitToggle && ball.body.velocity.y < 0) {
+        redHitToggle = true;
+        ballSpeedX *= 1.2;
+        ballSpeedY *= 1.2;
+        ball.body.setVelocityX(-ballSpeedX);
+        ball.body.setVelocityY(-ballSpeedY);
+    }
+    bar.destroy();
 
 }
 
@@ -327,12 +387,14 @@ function wallOverlap(playerOne, walls) {
 
 function hitplayerOne(ball, playerOne) {
     this.sound.play('blip-paddle');
-    // ballSpeedY = (ballSpeedY + 75) > MAX_ALLOWED_SPEED ? 
-    //     MAX_ALLOWED_SPEED : ballSpeedY + 75;
 
     hitCounter++;
     if (hitCounter === 8) {
-        ball.body.setVelocityX(ballSpeedX * 2);
+        ballSpeedX *= 1.5;
+        ball.body.setVelocityX(ballSpeedX);
+    } else if (hitCounter === 12) {
+        ballSpeedX *= 1.5;
+        ball.body.setVelocityX(ballSpeedX);
     }
 
     let paddle1X = playerOne.body.position.x;
